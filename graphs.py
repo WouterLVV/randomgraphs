@@ -3,6 +3,7 @@ import math
 import numpy as np
 import random
 import functools
+import matplotlib.animation as animation
 
 
 class Graph:
@@ -16,6 +17,8 @@ class Graph:
     def __init__(self, _V: list, _E: set):
         self.V = _V
         self.E = _E
+        self.edgelist = [e for e in self.E]
+        self.line_ctr = 0
         self.build_neighbors()
 
     def build_neighbors(self):
@@ -67,17 +70,30 @@ class Graph:
                 min_x = min_x_tmp
         return max_x, min_x
 
-    def visualize(self):
+    def draw_line(self):
+        e = self.edgelist[self.line_ctr]
+        plt.plot((self.V[e[0]].pos[0], self.V[e[1]].pos[0]), (self.V[e[0]].pos[1], self.V[e[1]].pos[1]), c='black')
+        self.line_ctr += 1
+
+    def visualize(self, animated = False):
         self.generate_layout()
         xy = np.zeros((len(self.V), 2))
         for i, v in enumerate(self.V):
             xy[i] = v.pos
+        fig = plt.figure()
         plt.scatter(xy[:, 0], xy[:, 1])
-
-        for e in self.E:
-            plt.plot((self.V[e[0]].pos[0], self.V[e[1]].pos[0]), (self.V[e[0]].pos[1], self.V[e[1]].pos[1]), c='black')
         plt.gca().set_aspect('equal', adjustable='box')
+        self.line_ctr = 0
+
+        if animated:
+            ani = animation.FuncAnimation(fig, self.draw_line, len(self.edgelist))
+        else:
+            for _ in range(len(self.edgelist)):
+                self.draw_line()
+
+
         plt.show()
+
 
 
 class DirectedGraph(Graph):
