@@ -1,8 +1,8 @@
 from graphs import *
-# # uncomment next lines to set the random seed static instead of different on every run
-# seed = 7857863  # some integer
-# random.seed(a=seed)
-# np.random.seed(seed=seed)
+# uncomment next lines to set the random seed static instead of different on every run
+seed = 7857863  # some integer
+random.seed(a=seed)
+np.random.seed(seed=seed)
 
 # # Basic Graph
 # v = [Graph.Node(None) for _ in range(6)]
@@ -10,9 +10,11 @@ from graphs import *
 # g = Graph(v,e)
 
 # ErdosRenyi Graph with n = 10, p = 0.5
-g = ErdosRenyi(10,0.5)
+g = ErdosRenyi(50,0.08)
 print(g.E)
-g.visualize(animated=False)
+g.generate_layout()
+print([(i, v.pos) for i,v in enumerate(g.V)])
+g.visualize(max_nbs=10, animated=False, animation_frametime=10)
 
 # # A simple branching process with a binomial distribution
 # func = BranchingProcess.generate_binomial_function(2,0.75)

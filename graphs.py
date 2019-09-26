@@ -4,7 +4,7 @@ import numpy as np
 import random
 import functools
 import matplotlib.animation as animation
-
+from collections import deque
 
 class Graph:
     class Node:
@@ -26,25 +26,57 @@ class Graph:
             self.V[e[0]].nbs.add(self.V[e[1]])
             self.V[e[1]].nbs.add(self.V[e[0]])
 
-    def generate_layout(self):
+    def generate_layout(self, max_nbs=0):
         for v in self.V:
             v.pos = None
         self.V[0].pos = (0., 0.)
-        max_x, min_x = self.recurse_layout(self.V[0], 0, math.tau)
+        max_x, min_x = self.iterate_layout(self.V[0], 0, math.tau, max_nbs=max_nbs)
         for i in range(len(self.V)):
             if self.V[i].pos == None:
                 self.V[i].pos = (0, 0)
                 max_x += 1
-                max_x_tmp, min_x_tmp = self.recurse_layout(self.V[i], 0, math.tau)
+                max_x_tmp, min_x_tmp = self.iterate_layout(self.V[i], 0, math.tau, max_nbs=max_nbs)
                 offset = max_x - min_x_tmp
                 q = [self.V[i]]
                 while len(q) > 0:
                     current = q.pop()
                     current.pos = (current.pos[0] + offset, current.pos[1])
                     for nb in current.nbs:
-                        if nb.pos[0] <= max_x:
+                        if nb.pos is not None and nb.pos[0] < max_x:
                             q.append(nb)
                 max_x = max_x + max_x_tmp - min_x_tmp
+
+    def iterate_layout(self, start, min_angle, max_angle, max_nbs=0):
+        start.pos = (0., 0.)
+        q = deque()
+        q.append((start, min_angle, max_angle))
+        max_x = 0
+        min_x = 0
+        while (len(q) != 0):
+            v, min_angle, max_angle = q.popleft()
+            nodes = []
+
+            for n in v.nbs:
+                if n.pos is None:
+                    nodes.append(n)
+                    if max_nbs > 0 and len(nodes) >= max_nbs:
+                        break
+            if len(nodes) == 0:
+                if v.pos is not None:
+                    if v.pos[0] > max_x:
+                        max_x = v.pos[0]
+                    if v.pos[0] < min_x:
+                        min_x = v.pos[0]
+                continue
+
+
+            angle = (max_angle - min_angle) / len(nodes)
+
+            for i, n in enumerate(nodes):
+                nangle = min_angle + (i + 0.5) * angle
+                n.pos = (v.pos[0] + math.cos(nangle), v.pos[1] + math.sin(nangle))
+                q.append((n, min_angle + i * angle, min_angle + (i + 1) * angle))
+        return max_x, min_x
 
     def recurse_layout(self, v, min_angle, max_angle):
         nodes = []
@@ -70,26 +102,32 @@ class Graph:
                 min_x = min_x_tmp
         return max_x, min_x
 
-    def draw_line(self):
-        e = self.edgelist[self.line_ctr]
+    def draw_line(self, index):
+        e = self.edgelist[index]
         plt.plot((self.V[e[0]].pos[0], self.V[e[1]].pos[0]), (self.V[e[0]].pos[1], self.V[e[1]].pos[1]), c='black')
-        self.line_ctr += 1
+        # self.line_ctr += 1
 
-    def visualize(self, animated = False):
-        self.generate_layout()
+    def visualize(self, max_nbs=0, animated=False, animation_frametime=200):
+        self.generate_layout(max_nbs=max_nbs)
         xy = np.zeros((len(self.V), 2))
         for i, v in enumerate(self.V):
             xy[i] = v.pos
         fig = plt.figure()
         plt.scatter(xy[:, 0], xy[:, 1])
         plt.gca().set_aspect('equal', adjustable='box')
+        bottom, top = plt.ylim()
+        if bottom > -1:
+            bottom = -1.
+        if top < 1:
+            top = 1
+        plt.ylim(bottom,top)
         self.line_ctr = 0
 
         if animated:
-            ani = animation.FuncAnimation(fig, self.draw_line, len(self.edgelist))
+            ani = animation.FuncAnimation(fig, self.draw_line, len(self.edgelist), interval=animation_frametime, repeat=False)
         else:
-            for _ in range(len(self.edgelist)):
-                self.draw_line()
+            for i in range(len(self.edgelist)):
+                self.draw_line(i)
 
 
         plt.show()
@@ -105,7 +143,7 @@ class DirectedGraph(Graph):
 class ErdosRenyi(Graph):
     def __init__(self, n, p):
         v = [Graph.Node(None) for _ in range(n)]
-        e = set([(i, j) for i in range(n) for j in range(i, n) if random.uniform(0, 1) <= p])
+        e = set([(i, j) for i in range(n) for j in range(i+1, n) if random.uniform(0, 1) <= p])
         super(ErdosRenyi, self).__init__(v, e)
 
 
