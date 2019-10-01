@@ -9,10 +9,14 @@ from collections import deque
 class Graph:
     class Node:
 
-        def __init__(self, _nbs):
+        def __init__(self, _nbs, _id=-1):
             self.nbs = _nbs
+            self.id = _id
             if self.nbs is None:
                 self.nbs = set()
+
+        def __str__(self):
+            return str(self.id) + " -- " + ",".join([str(v.id) for v in self.nbs]) if self.id >= 0 else "Node"
 
     def __init__(self, _V: list, _E: set):
         self.V = _V
@@ -142,7 +146,7 @@ class DirectedGraph(Graph):
 
 class ErdosRenyi(Graph):
     def __init__(self, n, p):
-        v = [Graph.Node(None) for _ in range(n)]
+        v = [Graph.Node(None, i) for i in range(n)]
         e = set([(i, j) for i in range(n) for j in range(i+1, n) if random.uniform(0, 1) <= p])
         super(ErdosRenyi, self).__init__(v, e)
 
@@ -175,7 +179,7 @@ class BranchingProcess(Graph):
             self.t += 1
         super(BranchingProcess, self).__init__(V, E)
 
-    def generate_layout(self):
+    def generate_layout(self, max_nbs=0):
         sum_of_previous_generations = 0
         for i in range(len(self.generations)):
             gen_size = self.generations[i]
