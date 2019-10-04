@@ -1,5 +1,6 @@
-from graphs import *
+from graphs.erdos_renyi import *
 from multiprocessing import Pool
+import matplotlib.pyplot as plt
 
 
 def count_triangles(g):
@@ -9,7 +10,7 @@ def count_triangles(g):
     return triangles // 3
 
 
-# destructive is faster
+# destructive is faster (usually)
 def count_triangles_minimalist(g, destructive=False):
     triangles = 0
     if not destructive:
@@ -25,17 +26,37 @@ def count_triangles_minimalist(g, destructive=False):
     return triangles
 
 
-# seed = 1  # some integer
-# random.seed(a=seed)
-# np.random.seed(seed=seed)
+#destructive
+def count_triangles_minimalist_nodewise(g):
+    triangles = 0
+    for vi in range(len(g.V)):
+        nbl = sorted([nb for nb in g.V[vi]])
+        for i in range(len(nbl)):
+            g.V[nbl[i]].remove(vi)
+            for j in range(i+1, len(nbl)):
+                if (nbl[i], nbl[j]) in g.E:
+                    triangles += 1
+    return triangles
+
+seed = 12341345  # some integer
+random.seed(a=seed)
+np.random.seed(seed=seed)
 
 
+
+repetitions = 100
+lb = 60
+n = 600000
+g = ErdosRenyiMinimalist(n, lb/n)
+
+print(count_triangles_minimalist(g, destructive=False))
+exit()
+# print(count_triangles_minimalist_nodewise(g))
+# exit()
 # n = 1000
 # for i in range((n*(n-1))//2):
 #     print(num_to_pair(i, n))
 
-repetitions = 100
-lb = 6
 
 
 def trial(n):

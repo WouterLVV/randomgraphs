@@ -1,22 +1,29 @@
-from graphs import *
-# uncomment next lines to set the random seed static instead of different on every run
-seed = 7857863  # some integer
-random.seed(a=seed)
-np.random.seed(seed=seed)
+from graphs.erdos_renyi import *
+from graphs.preferential_attachment import PA_Graph
+import random
+import numpy as np
+
+# # uncomment next lines to set the random seed static instead of different on every run
+# seed = 7857863  # some integer
+# random.seed(a=seed)
+# np.random.seed(seed=seed)
 
 # # Basic Graph
 # v = [Graph.Node(None) for _ in range(6)]
 # e = {(0, 1), (0, 2), (0, 3), (1, 2), (1, 4), (3, 4), (4, 5)}
 # g = Graph(v,e)
 
-# ErdosRenyi Graph with n = 10, p = 0.5
-g = ErdosRenyi(50,0.08)
-print(g.E)
-g.generate_layout()
-print([(i, v.pos) for i,v in enumerate(g.V)])
-g.visualize(max_nbs=10, animated=False, animation_frametime=10)
-
-# # A simple branching process with a binomial distribution
+# # ErdosRenyi Graph with n = 10, p = 0.5
+# g = ErdosRenyi(50,0.08)
+# print(g.E)
+# g.generate_layout()
+# print([(i, v.pos) for i,v in enumerate(g.V)])
+# g.visualize(max_nbs=10, animated=True, animation_frametime=1)
+#
+# # # A simple branching process with a binomial distribution
 # func = BranchingProcess.generate_binomial_function(2,0.75)
 # g = BranchingProcess(10, distribution=func)
 # g.visualize()
+
+g = PA_Graph(_m=1, _d=0, t=100)
+g.visualize(animated=False, animation_frametime=500)
