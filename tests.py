@@ -25,5 +25,7 @@ import numpy as np
 # g = BranchingProcess(10, distribution=func)
 # g.visualize()
 
-g = PA_Graph(_m=1, _d=0, t=100)
-g.visualize(animated=False, animation_frametime=500)
+g = PA_Graph(_m=3, _d=0, t=50)
+print(len(g.E))
+# print(len(g.edgelist))
+g.visualize(animated=True, animation_frametime=100, max_steps=100)

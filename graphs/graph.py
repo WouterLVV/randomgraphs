@@ -86,6 +86,40 @@ class Graph:
 
     # -------------Visualization------------- #
 
+    def force_field(self, sim_step=0.001, max_diff=0.01, node_repel=0.1, edge_attract=0.01, max_steps=1000):
+        self.force_field_init(sim_step, max_diff, node_repel, edge_attract)
+        steps = 0
+        while steps < max_steps and not self.force_field_step():
+            steps += 1
+
+    def force_field_init(self, sim_step=0.1, max_diff=0.01, node_repel=1., edge_attract=0.5):
+        self.ff_sim_step = sim_step
+        self.ff_max_delta = max_diff
+        self.ff_node_repel = node_repel
+        self.ff_edge_attract = edge_attract
+        for v in self.V:
+            v.pos = np.random.uniform(0.,len(self.V), (2,))
+
+    def force_field_step(self):
+        max_delta = -1
+        for v in self.V:
+            delta = np.array([0., 0.])
+            for w in self.V:
+                if v == w:
+                    continue
+                diff = v.pos-w.pos
+                delta += (self.ff_node_repel*diff/np.linalg.norm(diff))/len(self.V)
+            for w in v.nbs:
+                diff = w.pos-v.pos
+                delta += (self.ff_edge_attract * diff * np.log(np.linalg.norm(diff)))/len(self.E)
+            delta *= self.ff_sim_step
+            v.delta = delta
+            if np.linalg.norm(delta) > max_delta:
+                max_delta = np.linalg.norm(delta)
+        for v in self.V:
+            v.pos += v.delta
+        return max_delta < self.ff_max_delta
+
     def generate_layout(self, max_nbs=0):
         for v in self.V:
             v.pos = None
@@ -142,13 +176,16 @@ class Graph:
         e = self.edgelist[index]
         plt.plot((self.V[e[0]].pos[0], self.V[e[1]].pos[0]), (self.V[e[0]].pos[1], self.V[e[1]].pos[1]), c='black')
 
-    def visualize(self, max_nbs=0, animated=False, animation_frametime=200):
-        self.generate_layout(max_nbs=max_nbs)
+
+    def viz_step(self, index):
+        plt.clf()
+        self.force_field_step()
         xy = np.zeros((len(self.V), 2))
         for i, v in enumerate(self.V):
             xy[i] = v.pos
-        fig = plt.figure()
         plt.scatter(xy[:, 0], xy[:, 1])
+        for i in range(len(self.edgelist)):
+            self.draw_line(i)
         plt.gca().set_aspect('equal', adjustable='box')
         bottom, top = plt.ylim()
         if bottom > -1:
@@ -156,10 +193,14 @@ class Graph:
         if top < 1:
             top = 1
         plt.ylim(bottom, top)
-        self.line_ctr = 0
+
+    def visualize(self, max_nbs=0, animated=False, animation_frametime=200, max_steps=10):
+        # self.generate_layout(max_nbs=max_nbs)
+        self.force_field_init(edge_attract=0.01, sim_step=10., node_repel=20.)
+        fig = plt.figure()
 
         if animated:
-            ani = animation.FuncAnimation(fig, self.draw_line, len(self.edgelist), interval=animation_frametime,
+            ani = animation.FuncAnimation(fig, self.viz_step, max_steps, interval=animation_frametime,
                                           repeat=False)
         else:
             for i in range(len(self.edgelist)):
