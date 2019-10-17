@@ -4,7 +4,7 @@ import numpy as np
 
 class PA_Graph(Graph):
     class PA_Node(Graph.Node):
-        def __init__(self, nbs, _id=-1, has_self_loop=False):
+        def __init__(self, nbs: dict, _id=-1, has_self_loop=False):
             super(PA_Graph.PA_Node, self).__init__(nbs, _id)
             self.self_loop = has_self_loop
 
