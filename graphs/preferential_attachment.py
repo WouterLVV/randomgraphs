@@ -1,59 +1,52 @@
-from graphs.graph import Graph
+from graphs.graph import MultiGraph
 import numpy as np
 
 
-class PA_Graph(Graph):
-    class PA_Node(Graph.Node):
-        def __init__(self, nbs: dict, _id=-1, has_self_loop=False):
-            super(PA_Graph.PA_Node, self).__init__(nbs, _id)
-            self.self_loop = has_self_loop
-
-        def degree(self):
-            return len(self.nbs) + (2 if self.self_loop else 0)
+class PA_Graph(MultiGraph):
 
     def __init__(self, _m=1, _d=0, t=1):
         self.m = _m
         self.d = _d
-        super(PA_Graph, self).__init__([PA_Graph.PA_Node(None, 0, True)], set())
+        self.distribution = [0, 0]
+        e = dict()
+        e[(0, 0)] = 1
+        super(PA_Graph, self).__init__([PA_Graph.MultiNode(dict(), 0)], e)
         if (self.m == 1):
-            for _ in range(t-1):
+            for _ in range(t - 1):
                 self.evolve()
+            self.edgelist = [(i, j, k) for ((i,j), k) in self.E.items()]
         else:
-            for _ in range(self.m*t-1):
+            for _ in range(self.m * t - 1):
                 self.evolve()
             new_V, new_E = self.collapse()
             super(PA_Graph, self).__init__(new_V, new_E)
-
+        print()
 
     def evolve(self):
         t = len(self.V) + 1
         nodes = len(self.V)
-        new_node = PA_Graph.PA_Node(set(), nodes, np.random.uniform(0, 1) <= (1 + self.d) / (t * (2 + self.d) + (1 + self.d)))
+        new_node = PA_Graph.MultiNode(dict(), nodes)
         self.V.append(new_node)
-        for i in range(nodes):
-            v = self.V[i]
-            factor = self.d/self.m
-            if np.random.uniform(0,1) <= (v.degree()+factor)/(t*(2+factor) + (1+factor)):
-                self.E.add((i, nodes))
-                self.edgelist.append((i,nodes))
-                v.nbs.add(new_node)
-                new_node.nbs.add(v)
+        self.distribution.append(nodes)
+        p = [2 * t + 1, 2 * self.d]
+        if np.random.uniform(0, sum(p)) <= p[0]:
+            r = np.random.choice(self.distribution)
+        else:
+            r = np.random.choice(self.V).id
+        self.E[(r, nodes)] = 1
+        new_node.add_nb(self.V[r])
+        self.V[r].add_nb(new_node)
+        self.distribution.append(r)
 
     def collapse(self):
         new_V = []
-        new_E = set()
-        t = len(self.V)//self.m
+        new_E = dict()
+        t = len(self.V) // self.m
         for i in range(0, self.m * t, self.m):
-            new_node = PA_Graph.PA_Node(None, len(new_V), False)
-            for j in range(self.m):
-                if self.V[i + j].self_loop:
-                    new_node.self_loop = True
+            new_node = PA_Graph.MultiNode(None, len(new_V))
             new_V.append(new_node)
         for (a, b) in self.E:
             a2 = a // self.m
             b2 = b // self.m
-            if a2 == b2:
-                new_V[a2].self_loop = True
-            else:
-                new_E.add((a2, b2))
+            new_E[(a2, b2)] = 1
         return new_V, new_E

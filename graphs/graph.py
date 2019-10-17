@@ -111,8 +111,12 @@ class Graph:
                 if v == w:
                     continue
                 diff = v.pos-w.pos
+                if np.linalg.norm(diff) > 100:
+                    continue
                 delta += (self.ff_node_repel*diff/np.linalg.norm(diff))/len(self.V)
             for w in v.nbs:
+                if w == v:
+                    continue
                 diff = w.pos-v.pos
                 delta += (self.ff_edge_attract * diff * np.log(np.linalg.norm(diff)))/len(self.E)
             delta *= self.ff_sim_step
@@ -199,7 +203,7 @@ class Graph:
 
     def visualize(self, max_nbs=0, animated=False, animation_frametime=200, max_steps=10):
         # self.generate_layout(max_nbs=max_nbs)
-        self.force_field_init(edge_attract=0.01, sim_step=10., node_repel=2.)
+        self.force_field_init(edge_attract=0.1, sim_step=10., node_repel=20.)
         fig = plt.figure()
 
         if animated:
@@ -287,3 +291,32 @@ class MinimalistGraph:
                 self.V[a].remove(b)
                 self.V[b].remove(a)
         return triangles
+
+# Allows self-loops and double edges.
+class MultiGraph(Graph):
+    class MultiNode(Graph.Node):
+        def __init__(self, _nbs: dict, _id=-1):
+            if _nbs is None:
+                _nbs = dict()
+            self.degree = sum(_nbs.values())
+            super(MultiGraph.MultiNode, self).__init__(_nbs, _id)
+
+        def add_nb(self, nb, n=1):
+            if nb in self.nbs:
+                self.nbs[nb] += n
+            else:
+                self.nbs[nb] = n
+            self.degree += n
+
+        def degree(self):
+            return self.degree
+
+    def __init__(self, _V: [list, int], _E: dict):
+        if isinstance(_V, int):
+            _V = [MultiGraph.MultiNode(None, i) for i in range(_V)]
+        Graph.__init__(self, _V, _E)
+
+    def build_neighbors(self):
+        for ((i, j) , k) in self.E.items():
+            self.V[i].add_nb(self.V[j], k)
+            self.V[j].add_nb(self.V[i], k)

@@ -27,14 +27,14 @@ from functools import partial
 # g = BranchingProcess(10, distribution=func)
 # g.visualize()
 
-# g = PA_Graph(_m=3, _d=0, t=50)
-# print(len(g.E))
-# # print(len(g.edgelist))
-# g.visualize(animated=True, animation_frametime=100, max_steps=100)
-
-g = GRG.from_distribution(partial(np.random.pareto, a=2.5), 100)
-print([(v.id, v.w, v.degree()) for v in g.V])
-print(g.E)
+g = PA_Graph(_m=1, _d=0, t=50)
 print(len(g.E))
+# print(len(g.edgelist))
+g.visualize(animated=True, animation_frametime=10, max_steps=100)
+
+# g = GRG.from_distribution(partial(np.random.pareto, a=2.5), 100)
+# print([(v.id, v.w, v.degree()) for v in g.V])
+# print(g.E)
+# print(len(g.E))
 
 # g.visualize(animated=True, animation_frametime=10, max_steps=1000)
