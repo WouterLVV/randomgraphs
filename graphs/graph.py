@@ -14,8 +14,11 @@ class Graph:
             if self.nbs is None:
                 self.nbs = set()
 
+        def degree(self):
+            return len(self.nbs)
+
         def __str__(self):
-            return str(self.id) + " -- " + ",".join([str(v.id) for v in self.nbs]) if self.id >= 0 else "Node"
+            return str(self.id) + "(" + str(self.degree()) + ")" + " -- " + ",".join([str(v.id) for v in self.nbs]) if self.id >= 0 else "Node"
 
     # ------------Initialization------------ #
 
@@ -196,7 +199,7 @@ class Graph:
 
     def visualize(self, max_nbs=0, animated=False, animation_frametime=200, max_steps=10):
         # self.generate_layout(max_nbs=max_nbs)
-        self.force_field_init(edge_attract=0.01, sim_step=10., node_repel=20.)
+        self.force_field_init(edge_attract=0.01, sim_step=10., node_repel=2.)
         fig = plt.figure()
 
         if animated:
