@@ -14,11 +14,11 @@ class Graph:
             if self.nbs is None:
                 self.nbs = set()
 
-        def degree(self):
+        def get_degree(self):
             return len(self.nbs)
 
         def __str__(self):
-            return str(self.id) + "(" + str(self.degree()) + ")" + " -- " + ",".join([str(v.id) for v in self.nbs]) if self.id >= 0 else "Node"
+            return str(self.id) + "(" + str(self.get_degree()) + ")" + " -- " + ",".join([str(v.id) for v in self.nbs]) if self.id >= 0 else "Node"
 
     # ------------Initialization------------ #
 
@@ -308,7 +308,7 @@ class MultiGraph(Graph):
                 self.nbs[nb] = n
             self.degree += n
 
-        def degree(self):
+        def get_degree(self):
             return self.degree
 
     def __init__(self, _V: [list, int], _E: dict):
