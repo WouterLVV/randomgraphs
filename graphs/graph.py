@@ -87,6 +87,7 @@ class Graph:
             triangles += len(self.V[a].nbs.intersection(self.V[b].nbs))
         return triangles // 3
 
+
     # -------------Visualization------------- #
 
     def force_field(self, sim_step=0.001, max_diff=0.01, node_repel=0.1, edge_attract=0.01, max_steps=1000):

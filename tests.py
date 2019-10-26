@@ -26,16 +26,24 @@ from functools import partial
 # func = BranchingProcess.generate_binomial_function(2,0.75)
 # g = BranchingProcess(10, distribution=func)
 # g.visualize()
-for t in [10,20,50,100, 200, 500, 1000, 2000, 5000]: #, 10000]:
-    print(t)
-    g = PA_Graph(_m=1, _d=0, _t=t)
-    # g.visualize(animated=False, animation_frametime=10, max_steps=1)
-    print(len(g.E))
-    # print(g.avg_dist2())
-    print(g.avg_dist())
-    print()
-    # print(g.E)
-    # print(len(g.edgelist))
+
+g = EdgeStepGraph(_m=1, _d=0, _t=1000000, _p=0.9)
+print(len(g.V))
+print(len(g.E))
+# print(g.avg_dist2())
+# print(g.avg_dist())
+
+#
+# for t in [10,20,50,100, 200, 500, 1000, 2000, 5000]: #, 10000]:
+#     print(t)
+#     g = PA_Graph(_m=1, _d=0, _t=t)
+#     # g.visualize(animated=False, animation_frametime=10, max_steps=1)
+#     print(len(g.E))
+#     # print(g.avg_dist2())
+#     print(g.avg_dist())
+#     print()
+#     # print(g.E)
+#     # print(len(g.edgelist))
 
 
 # g = GRG.from_distribution(partial(np.random.pareto, a=2.5), 100)

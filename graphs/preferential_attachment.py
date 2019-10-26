@@ -1,3 +1,4 @@
+import time
 from collections import deque
 
 from graphs.graph import MultiGraph
@@ -11,10 +12,14 @@ class PA_Graph(MultiGraph):
         self.d = _d
         self.t = _t
         self.distribution = []
+        # self.starttime = time.time_ns()
+        # self.timeout = 60*10**9
         super(PA_Graph, self).__init__([], dict())
         if (self.m == 1):
             for _ in range(_t):
                 self.evolve()
+                # if time.time_ns() > self.starttime + self.timeout:
+                #     break
             self.edgelist = [(i, j, k) for ((i,j), k) in self.E.items()]
         else:
             for _ in range(self.m * _t):
@@ -30,12 +35,9 @@ class PA_Graph(MultiGraph):
         self.distribution.append(new_node_id)
         p = [2 * t + 1, 2 * self.d]
         if np.random.uniform(0, sum(p)) <= p[0]:
-            r = np.random.choice(self.distribution)
+            r = self.distribution[np.random.randint(0, len(self.distribution))]
         else:
-            r = np.random.choice(self.V).id
-        if r == new_node_id and t > 0:
-            self.V.pop()
-            return
+            r = np.random.randint(0, len(self.V))
         self.E[(r, new_node_id)] = 1
         new_node.add_nb(self.V[r])
         self.V[r].add_nb(new_node)
@@ -166,7 +168,9 @@ class EdgeStepGraph(PA_Graph):
             tmp = _p
             _p = lambda _: tmp
         # Hack so that we don't start with an edge_step because I made bad decisions and now I will stick with them
-        self.p = lambda s: 0. if len(s.V) == 0 else _p(s)
+        self.p = lambda s: 1. if len(s.V) == 0 else _p(s)
+
+
 
         # This version of supercalling allows you to overwrite functions that are used in init
         PA_Graph.__init__(self, _m, _d, _t)
@@ -176,20 +180,22 @@ class EdgeStepGraph(PA_Graph):
         p = [2 * t, 2 * self.d]  # No 2t+1 because both halfedges are undetermined
 
         if np.random.uniform(0, sum(p)) <= p[0]:
-            r1 = np.random.choice(self.distribution)
+            r1 = self.distribution[np.random.randint(0, len(self.distribution))]
         else:
-            r1 = np.random.choice(self.V).id
+            r1 = np.random.randint(0, len(self.V))
 
         if np.random.uniform(0, sum(p)) <= p[0]:
-            r2 = np.random.choice(self.distribution)
+            r2 = self.distribution[np.random.randint(0, len(self.distribution))]
         else:
-            r2 = np.random.choice(self.V).id
+            r2 = np.random.randint(0, len(self.V))
 
         if r2 > r1:
             pair = (r2, r1)
         else:
             pair = (r1, r2)
         self.E[pair] = self.E.get(pair, 0) + 1
+        self.distribution.append(r1)
+        self.distribution.append(r2)
         self.V[r1].add_nb(self.V[r2])
         self.V[r2].add_nb(self.V[r1])
 
@@ -197,10 +203,10 @@ class EdgeStepGraph(PA_Graph):
         PA_Graph.evolve(self)
 
     def evolve(self):
-        pe = self.p(self)
-        if np.random.ranf() < pe:
-            self.edge_step()
-        else:
+        pv = self.p(self)
+        if np.random.ranf() < pv:
             self.vertex_step()
+        else:
+            self.edge_step()
 
 
