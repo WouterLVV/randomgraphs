@@ -54,6 +54,6 @@ def process_line(line: str):
 
     return res
 
-# info = read_output("/home/wouter/master/Complex Networks/edgestepgraphsinC/outputs/output20.csv")
-# print(info)
-# print()
+info = read_output("/home/wouter/master/Complex Networks/edgestepgraphsinC/outputs/output20.csv")
+print(info)
+print()
